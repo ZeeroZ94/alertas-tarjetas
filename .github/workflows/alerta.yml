@@ -1,0 +1,37 @@
+name: Revisar Tarjetas Pinnacle
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  vigilar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar codigo
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar libreria
+        run: pip install requests
+
+      - name: Ejecutar revision
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.CHAT_ID }}
+        run: python monitor.py
+
+      - name: Guardar historial
+        run: |
+          git config user.name "Bot Tarjetas"
+          git config user.email "bot@users.noreply.github.com"
+          git add notificados.json
+          git diff --staged --quiet || (git commit -m "Actualizar historial" && git push)
